@@ -5,16 +5,28 @@ import { useState } from 'react';
 interface MovieModalProps {
   isOpen: boolean;
   onSubmit: (movie: string) => void;
+  onCancel?: () => void;
+  currentMovie?: string | null;
 }
 
-export default function MovieModal({ isOpen, onSubmit }: MovieModalProps) {
-  const [movie, setMovie] = useState('');
+export default function MovieModal({ isOpen, onSubmit, onCancel, currentMovie }: MovieModalProps) {
+  const [movie, setMovie] = useState(currentMovie || '');
+  const isEditing = !!currentMovie;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (movie.trim()) {
       onSubmit(movie.trim());
-      setMovie('');
+      if (!isEditing) {
+        setMovie('');
+      }
+    }
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      setMovie(currentMovie || '');
+      onCancel();
     }
   };
 
@@ -23,7 +35,9 @@ export default function MovieModal({ isOpen, onSubmit }: MovieModalProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-        <h2 className="text-xl font-bold mb-4">What's your favorite movie?</h2>
+        <h2 className="text-xl font-bold mb-4">
+          {isEditing ? 'Change Your Favorite Movie' : "What's your favorite movie?"}
+        </h2>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -33,12 +47,23 @@ export default function MovieModal({ isOpen, onSubmit }: MovieModalProps) {
             className="w-full p-3 border border-gray-300 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Save
-          </button>
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {isEditing ? 'Update Movie' : 'Save'}
+            </button>
+            {isEditing && onCancel && (
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>

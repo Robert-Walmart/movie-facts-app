@@ -18,10 +18,11 @@ export default function Dashboard({ user }: DashboardProps) {
   const [movieFact, setMovieFact] = useState('');
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(!user.favoriteMovie);
+  const [currentMovie, setCurrentMovie] = useState(user.favoriteMovie);
   const router = useRouter();
 
   const fetchMovieFact = async () => {
-    if (!user.favoriteMovie) return;
+    if (!currentMovie) return;
     
     setLoading(true);
     try {
@@ -48,6 +49,8 @@ export default function Dashboard({ user }: DashboardProps) {
 
       if (response.ok) {
         setShowModal(false);
+        setCurrentMovie(movie);
+        setMovieFact(''); // Clear previous fact
         // Refresh the page to get updated user data
         router.refresh();
       }
@@ -56,15 +59,19 @@ export default function Dashboard({ user }: DashboardProps) {
     }
   };
 
+  const handleChangeMovie = () => {
+    setShowModal(true);
+  };
+
   const handleLogout = () => {
     signOut({ callbackUrl: '/login' });
   };
 
   useEffect(() => {
-    if (user.favoriteMovie) {
+    if (currentMovie) {
       fetchMovieFact();
     }
-  }, [user.favoriteMovie]);
+  }, [currentMovie]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,11 +99,19 @@ export default function Dashboard({ user }: DashboardProps) {
             </button>
           </div>
 
-          {user.favoriteMovie && (
+          {currentMovie && (
             <div className="border-t pt-6">
-              <h2 className="text-xl font-semibold mb-4">
-                Your Favorite Movie: <span className="text-blue-600">{user.favoriteMovie}</span>
-              </h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">
+                  Your Favorite Movie: <span className="text-blue-600">{currentMovie}</span>
+                </h2>
+                <button
+                  onClick={handleChangeMovie}
+                  className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  Change Movie
+                </button>
+              </div>
               
               <div className="bg-blue-50 p-4 rounded-lg mb-4">
                 <h3 className="font-medium mb-2">Interesting Fact:</h3>
